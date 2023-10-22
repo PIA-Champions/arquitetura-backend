@@ -1,0 +1,71 @@
+service: serverless-rest-api-with-dynamodb
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+  iam:
+    role: arn:aws:iam::992141468735:role/LabRole
+
+functions:
+  create:
+    handler: survey/create.create
+    events:
+      - http:
+          path: survey
+          method: post
+          cors: true
+
+  list:
+    handler: survey/list.list
+    events:
+      - http:
+          path: survey
+          method: get
+          cors: true
+
+  get:
+    handler: survey/get.get
+    events:
+      - http:
+          path: survey/{id}
+          method: get
+          cors: true
+
+  update:
+    handler: survey/vote.update
+    events:
+      - http:
+          path: survey/{id}
+          method: put
+          cors: true
+
+  delete:
+    handler: survey/delete.delete
+    events:
+      - http:
+          path: survey/{id}
+          method: delete
+          cors: true
+
+resources:
+  Resources:
+    TodosDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
