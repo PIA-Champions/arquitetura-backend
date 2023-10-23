@@ -1,7 +1,6 @@
-'use strict';
+"use strict";
 
-const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
-
+const AWS = require("aws-sdk"); // eslint-disable-line import/no-extraneous-dependencies
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.delete = (event, context, callback) => {
@@ -16,11 +15,10 @@ module.exports.delete = (event, context, callback) => {
   dynamoDb.delete(params, (error) => {
     // handle potential errors
     if (error) {
-      console.error(error);
       callback(null, {
         statusCode: error.statusCode || 501,
-        headers: { 'Content-Type': 'text/plain' },
-        body: 'Couldn\'t remove the todo item.',
+        headers: { "Content-Type": "text/plain" },
+        body: "Couldn't remove the todo item.",
       });
       return;
     }
