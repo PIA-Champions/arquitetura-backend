@@ -1,31 +1,47 @@
-<!--
-title: 'AWS Serverless REST API example in NodeJS'
-description: 'This example demonstrates how to setup a RESTful Web Service allowing you to create, list, get, update and delete Todos. DynamoDB is used to store the data.'
-layout: Doc
-framework: v1
-platform: AWS
-language: nodeJS
-priority: 10
-authorLink: 'https://github.com/ozbillwang'
-authorName: 'Bill Wang'
-authorAvatar: 'https://avatars3.githubusercontent.com/u/8954908?v=4&s=140'
--->
+
 # Serverless REST API
 
-This example demonstrates how to setup a [RESTful Web Services](https://en.wikipedia.org/wiki/Representational_state_transfer#Applied_to_web_services) allowing you to create, list, get, update and delete Todos. DynamoDB is used to store the data. This is just an example and of course you could use any data storage as a backend.
+Essa aplicação foi baseada no exemplo de todo list disponibilizado pelo repositório serverless/examples
 
 ## Structure
 
-This service has a separate directory for all the todo operations. For each operation exactly one file exists e.g. `todos/delete.js`. In each of these files there is exactly one function which is directly attached to `module.exports`.
+Há alguns arquivos importantes para entender o funcionamento dessa aplicação.
 
-The idea behind the `todos` directory is that in case you want to create a service containing multiple resources e.g. users, notes, comments you could do so in the same service. While this is certainly possible you might consider creating a separate service for each resource. It depends on the use-case and your preference.
+Diretório survey possui todos os códigos em javascript separados por métodos.
 
-## Use-cases
+# Before application setup
 
-- API for a Web Application
-- API for a Mobile Application
+Essa aplicação ainda não possui uma versão funcional para rodar localmente, sendo necessário publicar na AWS se desejar fazer algum teste.
+
+Pode-se utilizar a conta disponibilizada pelo professor de PIA para essa publicação.
+
+Para isso, você precisa executar os seguintes passos:
+
+1 - Conecte ao Canvas da AWS, e dê start no seu laboratório.
+1.1 - Clique AWS Details, clique em show no AWS CLI para pegar as credenciais. Essas credenciais são temporárias e após 4 horas ela irá expirar e esse passo será preciso refazer.
+Pegue também o ID da conta, pois vamos precisar em um dos passos abaixo.
+1.2 - No terminal, crie a pasta ~/.aws se ela não existir; mkdir ~/.aws
+1.3 - Crie dois arquivos. O ~/.aws/config e ~/.aws/credentials com o conteúdo que você copiou no passo 1.1. Porém, adicione mais uma linha:
+
+region=us-east-1
+
+O ~ significa que a pasta com a credencial será criada na home do seu usuário, e não dentro da sua pasta do git. Até então estamos falando de configuraçaõ do ambiente, e não a aplicação.
+
+Instale o serverless dentro do seu ambiente
+
+npm i serverless -g
+
+Para testar, se o serverless funcionou, digite:
+
+serverless --version
 
 ## Setup
+
+Entre dentro da pasta serverless/survey-aws
+
+cd serverless/survey-aws
+
+
 
 ```bash
 npm install
@@ -33,13 +49,13 @@ npm install
 
 ## Deploy
 
-In order to deploy the endpoint simply run
+Para publicar, digite o comando
 
 ```bash
-serverless deploy
+serverless deploy --stage prd --param="account=XXXXXXXXXXXX"
 ```
 
-The expected result should be similar to:
+Você deve receber uma saída parecida com isso
 
 ```bash
 Serverless: Packaging service…
@@ -51,16 +67,16 @@ Serverless: Stack update finished…
 
 Service Information
 service: serverless-rest-api-with-dynamodb
-stage: dev
+stage: prd
 region: us-east-1
 api keys:
   None
 endpoints:
-  POST - https://45wf34z5yf.execute-api.us-east-1.amazonaws.com/dev/todos
-  GET - https://45wf34z5yf.execute-api.us-east-1.amazonaws.com/dev/todos
-  GET - https://45wf34z5yf.execute-api.us-east-1.amazonaws.com/dev/todos/{id}
-  PUT - https://45wf34z5yf.execute-api.us-east-1.amazonaws.com/dev/todos/{id}
-  DELETE - https://45wf34z5yf.execute-api.us-east-1.amazonaws.com/dev/todos/{id}
+  POST - https://45wf34z5yf.execute-api.us-east-1.amazonaws.com/prd/survey
+  GET - https://45wf34z5yf.execute-api.us-east-1.amazonaws.com/prd/survey
+  GET - https://45wf34z5yf.execute-api.us-east-1.amazonaws.com/prd/survey/{id}
+  PUT - https://45wf34z5yf.execute-api.us-east-1.amazonaws.com/prd/survey/{id}
+  DELETE - https://45wf34z5yf.execute-api.us-east-1.amazonaws.com/prd/survey/{id}
 functions:
   serverless-rest-api-with-dynamodb-dev-update: arn:aws:lambda:us-east-1:488110005556:function:serverless-rest-api-with-dynamodb-dev-update
   serverless-rest-api-with-dynamodb-dev-get: arn:aws:lambda:us-east-1:488110005556:function:serverless-rest-api-with-dynamodb-dev-get
@@ -71,79 +87,8 @@ functions:
 
 ## Usage
 
-You can create, retrieve, update, or delete todos with the following commands:
+Isso permite você votar, criar votação, deletar votação, listar todas a votações e uma em especifico
 
-### Create a Todo
 
-```bash
-curl -X POST https://XXXXXXX.execute-api.us-east-1.amazonaws.com/dev/todos --data '{ "text": "Learn Serverless" }'
-```
+Foi postado dentro da raiz do diretório o json para importar no postman os métodos de forma correta.
 
-Example Result:
-```bash
-{"text":"Learn Serverless","id":"ee6490d0-aa11e6-9ede-afdfa051af86","createdAt":1479138570824,"checked":false,"updatedAt":1479138570824}%
-```
-
-### List all Todos
-
-```bash
-curl https://XXXXXXX.execute-api.us-east-1.amazonaws.com/dev/todos
-```
-
-Example output:
-```bash
-[{"text":"Deploy my first service","id":"ac90feaa11e6-9ede-afdfa051af86","checked":true,"updatedAt":1479139961304},{"text":"Learn Serverless","id":"206793aa11e6-9ede-afdfa051af86","createdAt":1479139943241,"checked":false,"updatedAt":1479139943241}]%
-```
-
-### Get one Todo
-
-```bash
-# Replace the <id> part with a real id from your todos table
-curl https://XXXXXXX.execute-api.us-east-1.amazonaws.com/dev/todos/<id>
-```
-
-Example Result:
-```bash
-{"text":"Learn Serverless","id":"ee6490d0-aa11e6-9ede-afdfa051af86","createdAt":1479138570824,"checked":false,"updatedAt":1479138570824}%
-```
-
-### Update a Todo
-
-```bash
-# Replace the <id> part with a real id from your todos table
-curl -X PUT https://XXXXXXX.execute-api.us-east-1.amazonaws.com/dev/todos/<id> --data '{ "text": "Learn Serverless", "checked": true }'
-```
-
-Example Result:
-```bash
-{"text":"Learn Serverless","id":"ee6490d0-aa11e6-9ede-afdfa051af86","createdAt":1479138570824,"checked":true,"updatedAt":1479138570824}%
-```
-
-### Delete a Todo
-
-```bash
-# Replace the <id> part with a real id from your todos table
-curl -X DELETE https://XXXXXXX.execute-api.us-east-1.amazonaws.com/dev/todos/<id>
-```
-
-No output
-
-## Scaling
-
-### AWS Lambda
-
-By default, AWS Lambda limits the total concurrent executions across all functions within a given region to 100. The default limit is a safety limit that protects you from costs due to potential runaway or recursive functions during initial development and testing. To increase this limit above the default, follow the steps in [To request a limit increase for concurrent executions](http://docs.aws.amazon.com/lambda/latest/dg/concurrent-executions.html#increase-concurrent-executions-limit).
-
-### DynamoDB
-
-When you create a table, you specify how much provisioned throughput capacity you want to reserve for reads and writes. DynamoDB will reserve the necessary resources to meet your throughput needs while ensuring consistent, low-latency performance. You can change the provisioned throughput and increasing or decreasing capacity as needed.
-
-This is can be done via settings in the `serverless.yml`.
-
-```yaml
-  ProvisionedThroughput:
-    ReadCapacityUnits: 1
-    WriteCapacityUnits: 1
-```
-
-In case you expect a lot of traffic fluctuation we recommend to checkout this guide on how to auto scale DynamoDB [https://aws.amazon.com/blogs/aws/auto-scale-dynamodb-with-dynamic-dynamodb/](https://aws.amazon.com/blogs/aws/auto-scale-dynamodb-with-dynamic-dynamodb/)

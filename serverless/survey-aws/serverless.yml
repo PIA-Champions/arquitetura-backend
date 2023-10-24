@@ -8,7 +8,7 @@ provider:
   environment:
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
   iam:
-    role: arn:aws:iam::992141468735:role/LabRole
+    role: arn:aws:iam::${param:account}:role/LabRole
 
 functions:
   create:

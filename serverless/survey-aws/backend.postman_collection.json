@@ -1,0 +1,122 @@
+{
+	"info": {
+		"_postman_id": "98686754-5010-413d-95c4-8d6185243d1c",
+		"name": "backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5351566"
+	},
+	"item": [
+		{
+			"name": "ListAll",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://ix6iixqdf3.execute-api.us-east-1.amazonaws.com/prd/survey",
+					"protocol": "https",
+					"host": [
+						"ix6iixqdf3",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"prd",
+						"survey"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateSurvey",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Qual companhia aérea é melhor?\",\r\n    \"description\": \"Todas essas são companhia aéreas que estão no Brasil. Qual é a melhor?\",\r\n    \"options\": [\r\n        {\r\n            \"description\": \"azul\"\r\n        },\r\n        {\r\n            \"description\": \"gol\"\r\n        },\r\n        {\r\n            \"description\": \"latam\"\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ix6iixqdf3.execute-api.us-east-1.amazonaws.com/prd/survey",
+					"protocol": "https",
+					"host": [
+						"ix6iixqdf3",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"prd",
+						"survey"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ListSpecificSurvey",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://ix6iixqdf3.execute-api.us-east-1.amazonaws.com/prd/survey/696c16d0-6fb1-11ee-ae82-fb9b95d98cb2",
+					"protocol": "https",
+					"host": [
+						"ix6iixqdf3",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"prd",
+						"survey",
+						"696c16d0-6fb1-11ee-ae82-fb9b95d98cb2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Votar",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"option\": \"696ba1a2-6fb1-11ee-ae82-fb9b95d98cb2\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ix6iixqdf3.execute-api.us-east-1.amazonaws.com/prd/survey/696c16d0-6fb1-11ee-ae82-fb9b95d98cb2",
+					"protocol": "https",
+					"host": [
+						"ix6iixqdf3",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"prd",
+						"survey",
+						"696c16d0-6fb1-11ee-ae82-fb9b95d98cb2"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
