@@ -21,7 +21,8 @@ module.exports.create = (event, context, callback) => {
     return;
   }
 
-  if (typeof data.title !== "string") {
+  //Check if the title and description are a string.
+  if (typeof data.title && data.description !== "string") {
     callback(null, {
       statusCode: 400,
       headers: { "Content-Type": "text/plain" },
@@ -40,6 +41,16 @@ module.exports.create = (event, context, callback) => {
       votes: 0,
     };
     options.push(option[i]);
+  }
+
+  //Validate if the string is empty and if it's duplicated or not.
+  if (options.length == 0) {
+    callback({
+      statusCode: 400,
+      body: "Couldn\'t create the todo item.",
+    }); 
+    return;
+  // } else if(options.includes(description)) {
   }
 
   const params = {
