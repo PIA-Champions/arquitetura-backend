@@ -52,6 +52,27 @@ module.exports.create = (event, context, callback) => {
     },
   };
 
+  dynamoDb.scan(params, (error, result) => {
+    if (error) {
+      callback(null, {
+        statusCode: error.statusCode || 500,
+        headers: { "Content-Type": "text/plain" },
+        body: "Couldn't fetch the todos.",
+      });
+      return;
+    }
+
+    const item = result.Items.find((item) => item.title === data.title);
+    if (item) {
+      callback(null, {
+        statusCode: 409,
+        headers: { "Content-Type": "text/plain" },
+        body: "Item already registered.",
+      });
+      return;
+    }
+  });
+
   // write the todo to the database
   dynamoDb.put(params, (error) => {
     // handle potential errors
