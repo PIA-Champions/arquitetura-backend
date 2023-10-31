@@ -33,13 +33,12 @@ module.exports.create = (event, context, callback) => {
   let options = [];
 
   for (let i = 0; i < Object.keys(data.options).length; i++) {
-    const option = {};
-    option[i] = {
+    const option = {
       id: uuid.v1(),
       description: data.options[i].description,
       votes: 0,
     };
-    options.push(option[i]);
+    options.push(option);
   }
 
   const params = {
