@@ -1,6 +1,6 @@
-import { startStandaloneServer } from "@apollo/server/standalone";
 import { ApolloServer } from "@apollo/server";
-import { response } from "express";
+import { startServerAndCreateLambdaHandler, handlers } from '@as-integrations/aws-lambda';
+
  
 const enquetes = [
   {
@@ -90,11 +90,8 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
- 
-const { url } = await startStandaloneServer(server, {
-  listen: { port: 4000 },
-});
- 
+
+
 function findAllEnquetes() {
   return fetch('https://ix6iixqdf3.execute-api.us-east-1.amazonaws.com/prd/survey', {
     method: 'GET',
@@ -137,6 +134,10 @@ function deleteEnquete(id) {
   }).then((response) => response.json())
  
 }
+
+export const graphqlHandler = startServerAndCreateLambdaHandler(server, handlers.createAPIGatewayProxyEventV2RequestHandler(),
+);
+
  
  
-console.log(`🚀  Server ready at: ${url}`);
+//console.log(`🚀  Server ready at: ${url}`);

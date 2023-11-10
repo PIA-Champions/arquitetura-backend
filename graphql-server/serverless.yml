@@ -1,0 +1,18 @@
+service: apollo-lambda
+provider:
+  name: aws
+  runtime: nodejs18.x
+  iam:
+    role: arn:aws:iam::992141468735:role/LabRole
+  httpApi:
+    cors: true
+functions:
+  graphql:
+    handler: index.graphqlHandler 
+    events:
+      - httpApi:
+          path: /
+          method: POST
+      - httpApi:
+          path: /
+          method: GET
