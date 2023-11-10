@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WebSocket Enquete</title>
+    <style>
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: Arial, sans-serif;
+      }
+
+      #registration,
+      #enqueteCreation {
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      input[type="text"],
+      button {
+        padding: 8px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      button {
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      #enqueteList,
+      #enquete {
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      #enqueteQuestion {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      #opcoesList {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      #opcoesList li {
+        margin: 10px 0;
+      }
+
+      #resultado {
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      #voteButton {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      #voteButton:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      #messages {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      #messages > li {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+
+      #messages > li:nth-child(odd) {
+        background: #efefef;
+      }
+
+      #form {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 10px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        backdrop-filter: blur(10px);
+      }
+
+      #input {
+        border: none;
+        padding: 8px;
+        border-radius: 20px;
+        flex-grow: 1;
+        margin: 5px;
+      }
+
+      #form > button {
+        padding: 10px 20px;
+        background: #333;
+        color: #fff;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      #form > button:hover {
+        background: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <body>
+      <div id="registration">
+        <input id="username" autocomplete="off" placeholder="Your Name" />
+        <button id="registerButton">Register</button>
+      </div>
+      <div id="enqueteList" style="display:none;">
+        <h3>Enquetes Abertas:</h3>
+        <ul id="enquetesUl"></ul>
+      </div>
+      <div id="enqueteCreation" style="display:none;">
+        <input id="enqueteInput" autocomplete="off" placeholder="Enquete Question" />
+        <input id="opcoesInput" autocomplete="off" placeholder="Opcoes (separadas por vírgula)" />
+        <button id="createEnqueteButton">Create Enquete</button>
+        <button id="searchButton" >Buscar</button>
+      </div>
+      <div id="enquete" style="display:none;">
+        <h3 id="enqueteQuestion"></h3>
+        <div id="opcoesDiv">
+          <ul id="opcoesList"></ul>
+        </div>
+        <div id="resultado">
+        </div>
+        <button id="voteButton" >Vote</button>
+
+      </div>
+      <ul id="messages" style="display:none;"></ul>
+      <form id="form" action="" style="display:none;">
+        <input id="input" autocomplete="off" placeholder="Message" />
+        <button>Send</button>
+      </form>
+      <script src="/socket.io/socket.io.js"></script>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          var socket = io();
+          var messages = document.getElementById('messages');
+          var registrationDiv = document.getElementById('registration');
+          var enqueteCreationDiv = document.getElementById('enqueteCreation');
+          var enqueteListDiv = document.getElementById('enqueteList');
+          var enqueteDiv = document.getElementById('enquete');
+          var enqueteQuestion = document.getElementById('enqueteQuestion');
+          var opcoesDiv = document.getElementById('opcoesDiv');
+          var opcoesList = document.getElementById('opcoesList');
+          var voteButton = document.getElementById('voteButton');
+          var searchButton = document.getElementById('searchButton');
+          var enqueteUl = document.getElementById('enquetesUl');
+          var form = document.getElementById('form');
+          var input = document.getElementById('input');
+          var usernameInput = document.getElementById('username');
+          var registerButton = document.getElementById('registerButton');
+          var enqueteInput = document.getElementById('enqueteInput');
+          var opcoesInput = document.getElementById('opcoesInput');
+          var createEnqueteButton = document.getElementById('createEnqueteButton');
+
+          // Evento de registro de usuário
+          registerButton.addEventListener('click', function() {
+            var username = usernameInput.value;
+            if (username) {
+              registrationDiv.style.display = 'none';
+              enqueteListDiv.style.display = 'block';
+              enqueteCreationDiv.style.display = 'block';
+              messages.style.display = 'block';
+              socket.emit('user registered', username);
+            }
+          });
+
+          // Evento de criação de enquete
+          createEnqueteButton.addEventListener('click', function() {
+            var pergunta = enqueteInput.value;
+            var opcoes = opcoesInput.value.split(',').map(option => option.trim());
+            if (pergunta && opcoes.length > 1) {
+              enqueteInput.value = '';
+              opcoesInput.value = '';
+              socket.emit('criar enquete', pergunta, opcoes);
+            }
+          });
+
+          // Evento para buscar enquetes
+          searchButton.addEventListener('click', function() {
+            socket.emit('buscar enquetes');
+          });
+
+          socket.on('enquetes recuperadas', function (enquetes) {
+            var enquetesUl = document.getElementById('enquetesUl');
+            enquetesUl.innerHTML = '';
+
+            enquetes.forEach(function (enquete, index) {
+              var enqueteButton = document.createElement('button');
+              enqueteButton.textContent = enquete.title;
+              enquetesUl.appendChild(enqueteButton);
+
+              // Adicionando o evento de clique a cada botão
+              enqueteButton.addEventListener('click', function () {
+                socket.emit('opcoes enquete', index); // Envia o índice da enquete
+              });
+            });
+          });
+
+
+          socket.on('opcoes enquete', function (opcoes) {
+            opcoesList.innerHTML = '';
+
+            opcoes.forEach(function (opcao) {
+              var optionItem = document.createElement('li');
+              var optionInput = document.createElement('input');
+              optionInput.type = 'radio';
+              optionInput.name = 'opcao';
+              optionInput.value = opcao.description;
+              optionItem.appendChild(optionInput);
+              optionItem.appendChild(document.createTextNode(opcao.description));
+              opcoesList.appendChild(optionItem);
+            });
+
+            // Exibe a seção da enquete (opções)
+            enqueteDiv.style.display = 'block';
+          });
+
+          voteButton.addEventListener('click', function() {
+            var selectedOption = opcoesList.querySelector('input:checked');
+            if (selectedOption) {
+              socket.emit('votar', selectedOption.value);
+            }
+          });
+
+          socket.on('enquetes atualizadas', function(enquetes) {
+            enqueteUl.innerHTML = '';
+            enquetes.forEach(function(enquete, index) {
+              var enqueteItem = document.createElement('li');
+              enqueteItem.classList.add('enqueteLi');
+              enqueteItem.textContent = enquete.pergunta + ' (Criada por ' + enquete.criador + ')';
+              enqueteUl.appendChild(enqueteItem);
+              enqueteItem.addEventListener('click', function() {
+                socket.emit('opcoes enquete', index); // Emitir o índice da enquete
+              });
+            });
+          });
+
+          voteButton.addEventListener('click', function () {
+            var selectedOption = opcoesList.querySelector('input:checked');
+            if (selectedOption) {
+              var selectedOptionValue = selectedOption.value;
+              // Emitir o voto para a opção selecionada
+              socket.emit('votar', selectedOptionValue);
+            }
+          });
+
+        });
+
+
+      </script>
+    </body>
+  </body>
+</html>
+
