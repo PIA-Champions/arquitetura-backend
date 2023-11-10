@@ -1,5 +1,6 @@
 # Nodejs com GRAPHQL.
 
+
 Comandos prompt-dos do windows 10 e metodologias utilizadas de forma resumida:
 
 Criar pasta do projeto: graphql-server
@@ -21,6 +22,10 @@ node index.js
 node src/index.js
 
 No browser: http://localhost:4000
+
+ou testar os comandos do Graphql pelo endereço:
+
+https://bgsjdeelyk.execute-api.us-east-1.amazonaws.com/
 -------------------------------------------------------------------------------------------------
 Link para visualizar as Enquetes e suas oções de votos:
 
@@ -52,8 +57,8 @@ query {
   enquetes {
     description
     }
-  }
-}  
+}
+  
 -------------------------------------------------------------------------------------------------
 query { 
   enquetes {
@@ -61,8 +66,8 @@ query {
     title
     description
     }
-  }
-}  
+}
+ 
 -------------------------------------------------------------------------------------------------
 query { 
   enquetes {
@@ -162,10 +167,18 @@ query {
   enquetes {
     id
     description
-    }
   }
 }  
+-------------------------------------------------------------------------------------------------
+3.2) Voto na Enquete exemplo 2:
 
+mutation addEnqueteVote {
+  addVote(id: "21878482-729f-11ee-8ecb-f70fa366a824", option: "21878481-729f-11ee-8ecb-f70fa366a824") {
+    description
+    votes
+    id
+  }
+}
 
 -------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------
@@ -188,7 +201,6 @@ query {
   enquetes {
     id
     description
-    }
   }
 }  
 -------------------------------------------------------------------------------------------------
