@@ -5,7 +5,6 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const { GraphQLClient } = require('graphql-request');
-const { log } = require('console');
 
 // URL do seu endpoint GraphQL
 const endpoint = 'https://bgsjdeelyk.execute-api.us-east-1.amazonaws.com';
@@ -21,6 +20,7 @@ io.on('connection', (socket) => {
     try {
       const query = `{
         enquetes {
+          id
           title
           description
           options {
@@ -29,10 +29,10 @@ io.on('connection', (socket) => {
           }
         }
       }`;
-
+  
       const data = await client.request(query);
       console.log('Enquetes recuperadas:', data);
-
+  
       // Enviar as enquetes recuperadas para o cliente
       socket.emit('enquetes recuperadas', data.enquetes);
     } catch (error) {
@@ -58,10 +58,10 @@ io.on('connection', (socket) => {
           }
         }
       }`;
-
+  
       const data = await client.request(mutation);
       console.log('Nova enquete criada:', data);
-
+  
       // Enviar mensagem para todos os clientes sobre a nova enquete
       io.emit('enquetes atualizadas', data);
     } catch (error) {
@@ -79,31 +79,41 @@ io.on('connection', (socket) => {
           message
         }
       }`;
-
+  
       const data = await client.request(mutation);
       console.log('Enquete deletada:', data);
-
+  
       io.emit('enquete deletada', enqueteId);
     } catch (error) {
       console.error('Erro ao deletar a enquete:', error);
     }
   });
 
-  socket.on('opcoes enquete', async (index) => {
+  socket.on('opcoes enquete', async (idEnquete) => {
+    console.log(idEnquete)
     try {
-      const query = `query {
-        enquetes {
+      const query = `
+      query BuscarOpcoesEnquete($idEnquete: ID!) {
+        listaEspecifico(id: $idEnquete) {
+          id
+          description
+          title
           options {
             description
             votes
           }
+          variables {
+            
+          }
         }
-      }`;
-
+      }
+      
+      `;
+  
       const data = await client.request(query);
-      if (data.enquetes && data.enquetes[index] && data.enquetes[index].options) {
-        const opcoesDaEnquete = data.enquetes[index].options;
-        io.emit('opcoes enquete', opcoesDaEnquete);
+  
+      if (data.enquetes) {
+        io.emit('opcoes enquete', data.enquetes);
       } else {
         io.emit('opcoes enquete', []);
       }
@@ -112,37 +122,46 @@ io.on('connection', (socket) => {
       io.emit('opcoes enquete', []);
     }
   });
+  
 
   socket.on('votar', async (opcaoSelecionada) => {
     try {
-      const query = `query {
-        enquetes {
-          title
-          description
-          options {
-            description
-            votes
+      // Encontrar a enquete correspondente à opção escolhida
+      const enqueteQuery = `
+        query BuscarEnquete($opcaoSelecionada: String!) {
+          enquetes(opcaoSelecionada: $opcaoSelecionada) {
+            id
+            options {
+              id
+              description
+              votes
+            }
           }
         }
-      }`;
-      const data = await client.request(query);
-      const enqueteEncontrada = data.enquetes.find(enquete => enquete.description === opcaoSelecionada);
-      console.log("aqui" + data)
-      if (enqueteEncontrada) {
-        const opcaoVotada = enqueteEncontrada.opcoes.find(opcao => opcao.description === opcaoSelecionada);
-
+      `;
+  
+      const enqueteData = await client.request(enqueteQuery, { opcaoSelecionada });
+  
+      if (enqueteData.enquetes && enqueteData.enquetes.length > 0) {
+        const enquete = enqueteData.enquetes[0];
+  
+        // Encontrar a opção votada na enquete
+        const opcaoVotada = enquete.options.find(opcao => opcao.description === opcaoSelecionada);
+  
         if (opcaoVotada) {
           // Incrementar o contador de votos para a opção escolhida
           opcaoVotada.votes++;
+  
           // Emitir a informação atualizada de enquete para todos os clientes
-          io.emit('enquetes atualizadas', enquetes);
+          io.emit('enquetes atualizadas', enqueteData.enquetes);
         }
       }
     } catch (error) {
-      console.error('Erro ao buscar as opções da enquete:', error);
-      io.emit('opcoes enquete', []);
+      console.error('Erro ao votar:', error);
     }
   });
+  
+  
 
 });
 

@@ -225,16 +225,16 @@
 
               // Adicionando o evento de clique a cada botão
               enqueteButton.addEventListener('click', function () {
-                socket.emit('opcoes enquete', index); // Envia o índice da enquete
+                socket.emit('opcoes enquete', enquete.id); // Envia o ID da enquete
               });
             });
           });
 
-
           socket.on('opcoes enquete', function (opcoes) {
             opcoesList.innerHTML = '';
+            opcoesLista = opcoes[0]['options']
 
-            opcoes.forEach(function (opcao) {
+            opcoesLista.forEach(function (opcao) {
               var optionItem = document.createElement('li');
               var optionInput = document.createElement('input');
               optionInput.type = 'radio';
