@@ -230,29 +230,40 @@
             });
           });
 
-          socket.on('opcoes enquete', function (opcoes) {
+          socket.on('opcoes enquete', function (opcoesEnquete) {
+            var divResultado = document.getElementById('resultado');
             opcoesList.innerHTML = '';
-            opcoesLista = opcoes[0]['options']
+            divResultado.innerHTML = '';
 
-            opcoesLista.forEach(function (opcao) {
+            opcoesEnquete.options.forEach(function (opcao) {
               var optionItem = document.createElement('li');
               var optionInput = document.createElement('input');
               optionInput.type = 'radio';
               optionInput.name = 'opcao';
               optionInput.value = opcao.description;
+              optionInput.setAttribute('data-enquete-id', opcoesEnquete.enqueteId); // Adiciona o ID da enquete como atributo
+              optionInput.setAttribute('data-id', opcao.id);
               optionItem.appendChild(optionInput);
               optionItem.appendChild(document.createTextNode(opcao.description));
               opcoesList.appendChild(optionItem);
+              divResultado.append(opcao.description + ': ' + opcao.votes + ' ')
             });
 
             // Exibe a seção da enquete (opções)
             enqueteDiv.style.display = 'block';
           });
 
+
           voteButton.addEventListener('click', function() {
             var selectedOption = opcoesList.querySelector('input:checked');
             if (selectedOption) {
-              socket.emit('votar', selectedOption.value);
+              var opcaoId = selectedOption.dataset.id;
+              var enqueteId = selectedOption.dataset.enqueteId;  // Adiciona o atributo "data-enquete-id" com o ID da questão
+              socket.emit('votar', enqueteId, opcaoId );
+              setTimeout(function(){
+                socket.emit('opcoes enquete', enqueteId);
+              }, 100);
+              
             }
           });
 
@@ -268,16 +279,6 @@
               });
             });
           });
-
-          voteButton.addEventListener('click', function () {
-            var selectedOption = opcoesList.querySelector('input:checked');
-            if (selectedOption) {
-              var selectedOptionValue = selectedOption.value;
-              // Emitir o voto para a opção selecionada
-              socket.emit('votar', selectedOptionValue);
-            }
-          });
-
         });
 
 

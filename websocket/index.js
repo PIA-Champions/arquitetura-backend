@@ -90,72 +90,59 @@ io.on('connection', (socket) => {
   });
 
   socket.on('opcoes enquete', async (idEnquete) => {
-    console.log(idEnquete)
     try {
-      const query = `
-      query BuscarOpcoesEnquete($idEnquete: ID!) {
-        listaEspecifico(id: $idEnquete) {
-          id
-          description
-          title
-          options {
+      const mutation = `
+        mutation ListaEspecifico($listaEspecificoId: String) {
+          listaEspecifico(id: $listaEspecificoId) {
+            title
+            options {
+              votes
+              id
+              description
+            }
             description
-            votes
-          }
-          variables {
-            
+            id
           }
         }
-      }
-      
       `;
   
-      const data = await client.request(query);
+      const variables = { listaEspecificoId: idEnquete };
   
-      if (data.enquetes) {
-        io.emit('opcoes enquete', data.enquetes);
-      } else {
-        io.emit('opcoes enquete', []);
-      }
+      const data = await client.request(mutation, variables);
+  
+      // Adiciona o id da enquete ao objeto de opções
+      const opcoesEnquete = {
+        enqueteId: data.listaEspecifico.id,
+        options: data.listaEspecifico.options,
+      };
+  
+      io.emit('opcoes enquete', opcoesEnquete);
     } catch (error) {
       console.error('Erro ao buscar as opções da enquete:', error);
       io.emit('opcoes enquete', []);
     }
   });
   
-
-  socket.on('votar', async (opcaoSelecionada) => {
+  
+  socket.on('votar', async (enqueteId, opcaoId) => {
     try {
-      // Encontrar a enquete correspondente à opção escolhida
-      const enqueteQuery = `
-        query BuscarEnquete($opcaoSelecionada: String!) {
-          enquetes(opcaoSelecionada: $opcaoSelecionada) {
+      // Mutation para adicionar o voto
+      const mutation = `
+        mutation AddVote($addVoteId: String, $option: String) {
+          addVote(id: $addVoteId, option: $option) {
+            description
+            votes
             id
-            options {
-              id
-              description
-              votes
-            }
           }
         }
       `;
   
-      const enqueteData = await client.request(enqueteQuery, { opcaoSelecionada });
+      const variables = { addVoteId: enqueteId.toString(), option: opcaoId.toString() };
   
-      if (enqueteData.enquetes && enqueteData.enquetes.length > 0) {
-        const enquete = enqueteData.enquetes[0];
+      const data = await client.request(mutation, variables);
   
-        // Encontrar a opção votada na enquete
-        const opcaoVotada = enquete.options.find(opcao => opcao.description === opcaoSelecionada);
+      console.log('Voto registrado com sucesso:', data.addVote);
   
-        if (opcaoVotada) {
-          // Incrementar o contador de votos para a opção escolhida
-          opcaoVotada.votes++;
-  
-          // Emitir a informação atualizada de enquete para todos os clientes
-          io.emit('enquetes atualizadas', enqueteData.enquetes);
-        }
-      }
     } catch (error) {
       console.error('Erro ao votar:', error);
     }
